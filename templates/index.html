@@ -1,0 +1,63 @@
+<html>
+<head>
+    <title>All jsons (¬‿¬)</title>
+</head>
+
+<div id="wrapper" class="center">
+    <div id="left"><h2>All jsons alive</h2></div>
+    <div id="right"><a href="/about">about</a></div>
+</div>
+​
+<style>
+    center {
+        display: block;
+        margin: 0 auto;
+    }
+
+    #wrapper {
+
+        overflow: auto;
+    }
+
+    #left {
+        float: left;
+
+    }
+
+    #right {
+
+        float: right;
+    }
+
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+<body>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Data</th>
+    </tr>
+    {% for d in data %}
+    <tr>
+        <th>{{ d.id}}</th>
+        <th>{{d.data}}</th>
+    </tr>
+    {% endfor %}
+
+</table>
+</body>
+</html>
