@@ -26,13 +26,17 @@ def page_not_found(e):
 def json():
     if request.method == 'GET':
         json_id = request.args.get('jsonId')
+        json_found_not_found = True
         if json_id:
             result = ''
             for d in data:
                 if str(d.id) == str(json_id):
                     result = d.data
-            if not result:
-                return ("", status.HTTP_404_NOT_FOUND)
+                    json_found_not_found = False
+                    break
+
+            if json_found_not_found:
+                return ("json not found", status.HTTP_404_NOT_FOUND)
 
             return jsonify(result)
         else:
@@ -54,7 +58,6 @@ def json():
             json_to_edit_password = json_data['jsonPassword']
             del json_data['jsonPassword']
             if json_to_edit_password:
-                print(json_to_edit_password)
                 json_protected = True
         except:
             # if no json password found set protected flag to False
@@ -106,8 +109,6 @@ def json():
     if request.method == 'POST':
 
         recived_data = request.get_json(force=True)
-
-        print(recived_data)
         newJson = JsonObject(0, "null", None)
         try:
             json_to_create_id = recived_data['jsonId']
@@ -119,7 +120,6 @@ def json():
             del recived_data['jsonPassword']
         except:
             json_has_password = "not set"
-            print("no pass")
 
         if json_to_create_id:
             # create with custom id if id is not taken
@@ -141,24 +141,49 @@ def json():
         data.append(newJson)
 
         return (
-            "Json created your json id: " + json_to_create_id + " and pass: " + json_has_password + " .Remember your password it wont be shown anywhere!",
+            "Json created your json id: " + json_to_create_id + " and pass: " + json_has_password + ". Remember your password it wont be shown anywhere!",
             status.HTTP_201_CREATED)
 
     if request.method == 'DELETE':
+
+        # try to get json id
         json_id = request.args.get('jsonId')
+
         if json_id:
+            # find json and check if exists and is it protected!
             json_found = False
+
             for d in data:
                 if str(d.id) == str(json_id):
-                    data.remove(d)
                     json_found = True
+                    json = d
+                    break
 
             if json_found:
-                return ("", status.HTTP_200_OK)
+                # go on
+                if json.password:
+                    json_password = request.args.get('jsonPassword')
+
+                    # if we got password
+                    if json_password:
+                        if json_password == json.password:
+                            data.remove(json)
+                            return ("json removed", status.HTTP_200_OK)
+                        else:
+                            return ("Error invalid json password", status.HTTP_404_NOT_FOUND)
+                    # if user forgot password
+                    else:
+                        return ("Error json is protected and you did not provide password", status.HTTP_404_NOT_FOUND)
+
+                else:
+                    data.remove(json)
+                    return ("json removed", status.HTTP_200_OK)
             else:
-                return ("", status.HTTP_404_NOT_FOUND)
+                return ("Error json not found", status.HTTP_404_NOT_FOUND)
+
+
         else:
-            return ("", status.HTTP_404_NOT_FOUND)
+            return ("Error you did not send json id", status.HTTP_404_NOT_FOUND)
 
 
 @app.route('/about', methods=["GET"])
