@@ -5,7 +5,6 @@ from jsonObject import JsonObject
 app = Flask(__name__)
 
 data = []
-next_id = 0
 
 
 @app.route("/")
@@ -40,29 +39,110 @@ def json():
             return redirect("/")
 
     if request.method == 'PUT':
+        # get json
         json_data = request.get_json(force=True)
-        json_to_edit_id = json_data['jsonId']
-        if json_to_edit_id:
+        # try to get json id
+        try:
+            json_to_edit_id = json_data['jsonId']
             del json_data['jsonId']
+        except:
+            # if id is not sent return error
+            return ("Error you did not send json id", status.HTTP_404_NOT_FOUND)
+
+        try:
+            # get json password and remove it from json. set protected flag to True
+            json_to_edit_password = json_data['jsonPassword']
+            del json_data['jsonPassword']
+            if json_to_edit_password:
+                print(json_to_edit_password)
+                json_protected = True
+        except:
+            # if no json password found set protected flag to False
+            json_protected = False
+
+        # handle edit if protected
+        if json_protected:
+            json_updated = False
             json_found = False
             for d in data:
+                # search for json by id
                 if str(d.id) == str(json_to_edit_id):
-                    d.data = json_data
+                    # found json by id
                     json_found = True
+                    if str(d.password) == str(json_to_edit_password):
+                        # if json password ok
+                        json_updated = True
+                        d.data = json_data
+                        break
+                    else:
+                        # if json password is invalid
+                        return ("Error invalid json password", status.HTTP_404_NOT_FOUND)
 
-            if json_found:
-                return ("", status.HTTP_200_OK)
+            if json_found and json_updated:
+                return ("json updated", status.HTTP_200_OK)
             else:
-                return ("", status.HTTP_404_NOT_FOUND)
+                # did not found json by id
+                return ("Error json not found", status.HTTP_404_NOT_FOUND)
+        # handle edit if not protected
         else:
-            return ("", status.HTTP_404_NOT_FOUND)
+            json_updated = False
+            json_found = False
+            for d in data:
+                # search for json by id
+                if str(d.id) == str(json_to_edit_id):
+                    if d.password:
+                        return ("Error json is protected!", status.HTTP_404_NOT_FOUND)
+                    # found json by id
+                    json_found = True
+                    json_updated = True
+                    d.data = json_data
+                    break
+            if json_found and json_updated:
+                return ("json updated", status.HTTP_200_OK)
+            else:
+                # did not found json by id
+                return ("Error json not found", status.HTTP_404_NOT_FOUND)
 
     if request.method == 'POST':
-        global next_id
-        next_id = next_id + 1
-        recived_data = JsonObject(next_id, request.get_json(force=True))
-        data.append(recived_data)
-        return ("", status.HTTP_201_CREATED)
+
+        recived_data = request.get_json(force=True)
+
+        print(recived_data)
+        newJson = JsonObject(0, "null", None)
+        try:
+            json_to_create_id = recived_data['jsonId']
+        except:
+            return ("Error you need to provide json id", status.HTTP_404_NOT_FOUND)
+        try:
+            json_has_password = recived_data['jsonPassword']
+            newJson.password = json_has_password
+            del recived_data['jsonPassword']
+        except:
+            json_has_password = "not set"
+            print("no pass")
+
+        if json_to_create_id:
+            # create with custom id if id is not taken
+            id_taken = False
+            for d in data:
+                if str(d.id) == str(json_to_create_id):
+                    id_taken = True
+
+            if not id_taken:
+                newJson.id = json_to_create_id
+            else:
+                return ("that id is taken", status.HTTP_403_FORBIDDEN)
+
+        else:
+            return ("pls provide json id", status.HTTP_204_NO_CONTENT)
+
+        del recived_data['jsonId']
+        newJson.data = recived_data
+        data.append(newJson)
+
+        return (
+            "Json created your json id: " + json_to_create_id + " and pass: " + json_has_password + " .Remember your password it wont be shown anywhere!",
+            status.HTTP_201_CREATED)
 
     if request.method == 'DELETE':
         json_id = request.args.get('jsonId')

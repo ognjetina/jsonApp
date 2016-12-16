@@ -50,11 +50,17 @@
     <tr>
         <th>ID</th>
         <th>Data</th>
+        <th>Protected</th>
     </tr>
     {% for d in data %}
     <tr>
         <th>{{ d.id}}</th>
         <th>{{d.data}}</th>
+        {% if d.password %}
+        <th>Protected</th>
+        {% else %}
+        <th>Not protected</th>
+        {% endif%}
     </tr>
     {% endfor %}
 
