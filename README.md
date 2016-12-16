@@ -23,66 +23,58 @@ Run:
   </ul>
 
 Use:
-  <ul>
-        <li>
+
             Add your json:
 
-                    Make a POST request with your json file on: http://localhost:5000/json<br>
-                    Json has to contain jsonId field with id you are going to use to find edit or delete your json.<br>
-                    jsonId field will not be saved in your json.<br>
-                    <br>
-                    If you wont to protect your json with password your json has to contain jsonPassword field.<br>
+                    Make a POST request with your json file on: http://localhost:5000/json
+                    Json has to contain jsonId field with id you are going to use to find edit or delete your json.
+                    jsonId field will not be saved in your json.
+                    
+                    If you wont to protect your json with password your json has to contain jsonPassword field.
                     jsonPassword will not be saved in your json, but you wont be able to delete or update your json
-                    <br>without it so remember the password.
-
-                    <br><br>
+                    without it so remember the password.
                     If everything is right your json will be stored with its ID and server will respond with http status
                     code 201.
 
-        </li>
-        <br>
-        <li>
+       
             Get your json:
-
+   
                     Make a GET request with argument jsonId on: http://localhost:5000/json
-                    <br><br>
-                    example: http://localhost:5000/json?jsonId=1<br>
+                 
+                    example: http://localhost:5000/json?jsonId=1
                     Server will return json if json exists.
 
-        </li>
-        <br>
-        <li>
+       
             Change your json:
-            If not password protected:<br>
+            
+            If not password protected:
                     Make a PUT request with your new json data and add jsonId to your json:
                     http://localhost:5000/json
-                    <br><br>
-                    example: send PUT with json: <br>
-                    {"firstName":"Peter","jsonId":"2"}<br>
+               
+                    example: send PUT with json: 
+                    {"firstName":"Peter","jsonId":"2"}
                     and server will remove jsonId field and update your json.
 
-               If password protected:<br>
+               If password protected:
                     Make a PUT request with your new json data and add jsonId and jsonPassword to your json:
                     http://localhost:5000/json
-                    <br><br>
-                    example: send PUT with json: <br>
-                    {"firstName":"Peter","jsonId":"2","jsonPassword:"myPasswordIsEpic"}<br>
+                  
+                    example: send PUT with json: 
+                    {"firstName":"Peter","jsonId":"2","jsonPassword:"myPasswordIsEpic"}
                     and server will remove jsonId amd jsonPassword fields and update your json if your password is correct.
-
-        </li>
-        <br>
-        <li>
+    
+       
             Delete your json:
-            If not password protected:<br>
+           
+            If not password protected:
                     Make a DELETE request with argument jsonId on: http://localhost:5000/json
-                    <br><br>
-                    example: send DELETE to http://localhost:5000/json?jsonId=1<br>
+
+                    example: send DELETE to http://localhost:5000/json?jsonId=1
                     Server will delete json with id 1.
 
-                If password protected:<br>
+                If password protected:
                     Make a DELETE request with argument jsonId and jsonPassword on: http://localhost:5000/json
-                    <br><br>
-                    example: send DELETE to http://localhost:5000/json?jsonId=1&jsonPassword=password<br>
+                    example: send DELETE to http://localhost:5000/json?jsonId=1&jsonPassword=password
                     Server will delete json with id 1.
-        </li>
-    </ul>
+        
+    
