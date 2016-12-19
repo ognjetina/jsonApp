@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify, render_template, redirect
 from flask.ext.api import status
 from jsonObject import JsonObject
+from flask_cors import CORS
 
 app = Flask(__name__)
-
+CORS(app)
 data = []
 
 
