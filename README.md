@@ -9,6 +9,10 @@ Run:
   Start on local
   ```{engine='sh}
   git clone https://github.com/ognjetina/jsonApp.git
+  cd jsonApp
+  virtualenv venvJsonApp
+  . /venvJsonApp/bin/activate
+  pip install -r requirements.txt
   python app.py
   ```
   </li>
