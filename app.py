@@ -2,8 +2,12 @@ from flask import Flask, request, jsonify, render_template, redirect
 from flask.ext.api import status
 from jsonObject import JsonObject
 from flask_cors import CORS
+from flask.ext.sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+db = SQLAlchemy(app)
 CORS(app)
 data = []
 
