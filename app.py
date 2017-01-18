@@ -12,7 +12,6 @@ db.create_all()
 CORS(app)
 
 
-
 class Json(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     password = db.Column(db.String(80), unique=False, nullable=True, default=None)
@@ -28,7 +27,7 @@ class Json(db.Model):
         return self.data
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def web():
     try:
         jsons = Json.query.all()
