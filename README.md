@@ -30,7 +30,7 @@ Use:
 
 Add your json:
 
-Make a POST request with your json file on: http://localhost:5000/json
+Make a POST request with your json file on: http://localhost/json
 Json has to contain jsonId field with id you are going to use to find edit or delete your json.
 jsonId field will not be saved in your json.
                     
@@ -42,9 +42,9 @@ code 201.
          
 Get your json:
 
-Make a GET request with argument jsonId on: http://localhost:5000/json
+Make a GET request with argument jsonId on: http://localhost/json
                  
-example: http://localhost:5000/json?jsonId=1
+example: http://localhost/json?jsonId=1
 Server will return json if json exists.
 
        
@@ -52,7 +52,7 @@ Change your json:
             
 If not password protected:
 Make a PUT request with your new json data and add jsonId to your json:
-http://localhost:5000/json
+http://localhost/json
                
 example: send PUT with json: 
 {"firstName":"Peter","jsonId":"2"}
@@ -60,7 +60,7 @@ and server will remove jsonId field and update your json.
 
 If password protected:
 Make a PUT request with your new json data and add jsonId and jsonPassword to your json:
-http://localhost:5000/json
+http://localhost/json
                   
 example: send PUT with json: 
 {"firstName":"Peter","jsonId":"2","jsonPassword:"myPasswordIsEpic"}
@@ -69,14 +69,14 @@ and server will remove jsonId amd jsonPassword fields and update your json if yo
 Delete your json:
            
 If not password protected:
-Make a DELETE request with argument jsonId on: http://localhost:5000/json
+Make a DELETE request with argument jsonId on: http://localhost/json
 
-example: send DELETE to http://localhost:5000/json?jsonId=1
+example: send DELETE to http://localhost/json?jsonId=1
 Server will delete json with id 1.
 
 If password protected:
-Make a DELETE request with argument jsonId and jsonPassword on: http://localhost:5000/json
-example: send DELETE to http://localhost:5000/json?jsonId=1&jsonPassword=password
+Make a DELETE request with argument jsonId and jsonPassword on: http://localhost/json
+example: send DELETE to http://localhost/json?jsonId=1&jsonPassword=password
 Server will delete json with id 1.
         
     
