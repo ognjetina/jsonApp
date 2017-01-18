@@ -14,8 +14,6 @@ CORS(app)
 data = []
 
 
-
-
 class Json(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     password = db.Column(db.String(80), unique=True)
@@ -32,9 +30,12 @@ class Json(db.Model):
 
 @app.route("/")
 def web():
-
-    jsons  = Json.query.all()
-    return render_template('index.html', data=data, jsonsFromDB=json)
+    jsons = None
+    try:
+        jsons = Json.query.all()
+    except:
+        pass
+    return render_template('index.html', data=data, jsonsFromDB=jsons)
 
 
 @app.errorhandler(404)
@@ -162,10 +163,14 @@ def json():
             return ("pls provide json id", status.HTTP_204_NO_CONTENT)
 
         del recived_data['jsonId']
-        newJson.data = recived_data
-        newJsonDB = Json(newJson.id,newJson.password,newJson.data)
-        db.session.add(newJsonDB)
-        db.session.commit()
+
+        try:
+            newJson.data = recived_data
+            newJsonDB = Json(newJson.id, newJson.password, newJson.data)
+            db.session.add(newJsonDB)
+            db.session.commit()
+        except:
+            pass
         data.append(newJson)
 
         return (
@@ -222,8 +227,10 @@ def about():
 if __name__ == "__main__":
     app.logger.addHandler(logging.StreamHandler(sys.stdout))
     app.logger.setLevel(logging.DEBUG)
-
-    sys.stdout.write("Starting the app")
-    sys.stdout.write("Creating db")
-    db.create_all()
+    try:
+        sys.stdout.write("Starting the app")
+        sys.stdout.write("Creating db")
+        db.create_all()
+    except:
+        pass
     app.run(host='0.0.0.0', threaded=True)
