@@ -8,8 +8,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+db.create_all()
 CORS(app)
-data = []
+
 
 
 class Json(db.Model):
@@ -199,9 +200,4 @@ def about():
 
 
 if __name__ == "__main__":
-    try:
-        print("Starting the app")
-        db.create_all()
-    except Exception as e:
-        print(e)
     app.run(host='0.0.0.0', threaded=True)
