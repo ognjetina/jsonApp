@@ -5,9 +5,10 @@ from flask.ext.sqlalchemy import SQLAlchemy
 import os, sys, logging
 
 app = Flask(__name__)
-
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.ERROR)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
@@ -25,9 +26,6 @@ class Json(db.Model):
     def __repr__(self):
         return self.data
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.create_all()
 CORS(app)
@@ -64,7 +62,7 @@ def json():
         try:
             result = db.session.query(Json).get(json_id)
             if result:
-                return str(result)
+                return result.data
             else:
                 return ("json not found", status.HTTP_404_NOT_FOUND)
         except Exception as e:
