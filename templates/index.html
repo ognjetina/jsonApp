@@ -64,6 +64,18 @@
     </tr>
     {% endfor %}
 
+    {% for d in jsonsFromDB %}
+       <tr>
+        <th>{{ d.id}}</th>
+        <th>{{d.data}}</th>
+        {% if d.password %}
+        <th>Protected</th>
+        {% else %}
+        <th>Not protected</th>
+        {% endif%}
+    </tr>
+    {% endfor %}
+
 </table>
 </body>
 </html>

@@ -32,7 +32,9 @@ class Json(db.Model):
 
 @app.route("/")
 def web():
-    return render_template('index.html', data=data)
+
+    jsons  = Json.query.all()
+    return render_template('index.html', data=data, jsonsFromDB=json)
 
 
 @app.errorhandler(404)
@@ -161,6 +163,9 @@ def json():
 
         del recived_data['jsonId']
         newJson.data = recived_data
+        newJsonDB = Json(newJson.id,newJson.password,newJson.data)
+        db.session.add(newJsonDB)
+        db.session.commit()
         data.append(newJson)
 
         return (
