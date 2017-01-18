@@ -4,11 +4,10 @@ from jsonObject import JsonObject
 from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
-import logging
-import sys
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 CORS(app)
 data = []
@@ -30,12 +29,11 @@ class Json(db.Model):
 
 @app.route("/")
 def web():
-    jsons = []
     try:
         jsons = Json.query.all()
     except:
         pass
-    return render_template('index.html', data=data, jsonsFromDB=jsons)
+    return render_template('index.html', jsons=jsons)
 
 
 @app.errorhandler(404)
@@ -166,12 +164,15 @@ def json():
 
         try:
             newJson.data = recived_data
-            newJsonDB = Json(newJson.id, newJson.password, newJson.data)
+            newJsonDB = Json(newJson.id, newJson.password, str(newJson.data))
             db.session.add(newJsonDB)
             db.session.commit()
+
             print("save new json to db")
-        except:
+        except Exception as e:
+
             print("failed to save json to db")
+            print(e)
             pass
         data.append(newJson)
 
