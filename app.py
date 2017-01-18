@@ -8,12 +8,7 @@ app = Flask(__name__)
 
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.ERROR)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-db.create_all()
-CORS(app)
 
 
 class Json(db.Model):
@@ -29,6 +24,13 @@ class Json(db.Model):
 
     def __repr__(self):
         return self.data
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.create_all()
+CORS(app)
 
 
 @app.route("/", methods=["GET"])
