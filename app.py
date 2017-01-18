@@ -30,7 +30,7 @@ class Json(db.Model):
 @app.route("/", methods=["GET"])
 def web():
     try:
-        jsons = Json.query.all()
+        jsons = db.session.query(Json).all()
     except:
         pass
     return render_template('index.html', jsons=jsons)
