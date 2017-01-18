@@ -227,11 +227,9 @@ def about():
 
 
 if __name__ == "__main__":
-    app.logger.addHandler(logging.StreamHandler(sys.stdout))
-    app.logger.setLevel(logging.DEBUG)
     try:
-        sys.stdout.write("Starting the app")
-        sys.stdout.write("Creating db")
+        print("Starting the app")
+        print("Creating db")
         db.create_all()
     except:
         pass
