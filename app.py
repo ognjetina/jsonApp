@@ -33,6 +33,7 @@ class Json(db.Model):
 
 @app.route("/", methods=["GET"])
 def web():
+    jsons = None
     try:
         jsons = db.session.query(Json).all()
     except:
