@@ -4,12 +4,31 @@ from jsonObject import JsonObject
 from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
+import logging
+import sys
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 db = SQLAlchemy(app)
 CORS(app)
 data = []
+
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.DEBUG)
+
+
+class Json(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    password = db.Column(db.String(80), unique=True)
+    data = db.Column(db.String(), unique=True)
+
+    def __init__(self, id, password, data):
+        self.id = id
+        self.password = password
+        self.data = data
+
+    def __repr__(self):
+        return '<User %r>' % self.data
 
 
 @app.route("/")
@@ -197,4 +216,7 @@ def about():
 
 
 if __name__ == "__main__":
+    sys.stdout.write("Starting the app")
+    sys.stdout.write("Creating db")
+    db.create_all()
     app.run(host='0.0.0.0', threaded=True)
