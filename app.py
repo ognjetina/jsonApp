@@ -1,10 +1,14 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template
 from flask.ext.api import status
 from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
-import os
+import os, sys, logging
 
 app = Flask(__name__)
+
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
