@@ -1,8 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask.ext.api import status
 from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 import os, sys, logging
+import json as json_wrap
 
 app = Flask(__name__)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -62,7 +63,8 @@ def json():
         try:
             result = db.session.query(Json).get(json_id)
             if result:
-                return result.data
+                return jsonify(data=json_wrap.loads(result.data))
+
             else:
                 return ("json not found", status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -103,7 +105,7 @@ def json():
                 # if json password ok
                 json_updated = True
                 try:
-                    json_to_edit.data = str(json_data)
+                    json_to_edit.data = json_wrap.dumps(json_data)
                     db.session.commit()
                 except Exception as e:
                     print(e)
@@ -123,7 +125,7 @@ def json():
         else:
             json_updated = False
             try:
-                json_to_edit.data = str(json_data)
+                json_to_edit.data = json_wrap.dumps(json_data)
                 db.session.commit()
                 json_updated = True
             except Exception as e:
@@ -152,7 +154,7 @@ def json():
         if not taken:
             try:
                 del recived_data['jsonId']
-                newJsonDB = Json(json_to_create_id, json_has_password, str(recived_data))
+                newJsonDB = Json(json_to_create_id, json_has_password, json_wrap.dumps(recived_data))
                 db.session.add(newJsonDB)
                 db.session.commit()
             except Exception as e:
