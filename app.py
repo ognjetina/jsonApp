@@ -1,6 +1,5 @@
-from flask import Flask, request, jsonify, render_template, redirect
+from flask import Flask, request, render_template, redirect
 from flask.ext.api import status
-from jsonObject import JsonObject
 from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
@@ -15,16 +14,17 @@ data = []
 
 class Json(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    password = db.Column(db.String(80), unique=True)
-    data = db.Column(db.String(), unique=True)
+    password = db.Column(db.String(80), unique=False, nullable=True, default=None)
+    data = db.Column(db.String(), unique=False)
 
     def __init__(self, id, password, data):
         self.id = id
-        self.password = password
+        if password:
+            self.password = password
         self.data = data
 
     def __repr__(self):
-        return '<User %r>' % self.data
+        return self.data
 
 
 @app.route("/")
@@ -49,22 +49,20 @@ def page_not_found(e):
 @app.route('/json', methods=["GET", "PUT", "POST", "DELETE"])
 def json():
     if request.method == 'GET':
+
         json_id = request.args.get('jsonId')
-        json_found_not_found = True
-        if json_id:
-            result = ''
-            for d in data:
-                if str(d.id) == str(json_id):
-                    result = d.data
-                    json_found_not_found = False
-                    break
+        if not json_id:
+            return ("error you need to provide json id", status.HTTP_404_NOT_FOUND)
 
-            if json_found_not_found:
+        try:
+            result = db.session.query(Json).get(json_id)
+            if result:
+                return str(result)
+            else:
                 return ("json not found", status.HTTP_404_NOT_FOUND)
-
-            return jsonify(result)
-        else:
-            return redirect("/")
+        except Exception as e:
+            print(e)
+            return ("error something bad happend", status.HTTP_404_NOT_FOUND)
 
     if request.method == 'PUT':
         # get json
@@ -75,7 +73,14 @@ def json():
             del json_data['jsonId']
         except:
             # if id is not sent return error
-            return ("Error you did not send json id", status.HTTP_404_NOT_FOUND)
+            return ("error you did not send json id", status.HTTP_404_NOT_FOUND)
+
+        try:
+            # get json from db
+            json_to_edit = db.session.query(Json).get(json_to_edit_id)
+
+        except:
+            return ("error json not found", status.HTTP_404_NOT_FOUND)
 
         try:
             # get json password and remove it from json. set protected flag to True
@@ -88,138 +93,104 @@ def json():
             json_protected = False
 
         # handle edit if protected
-        if json_protected:
-            json_updated = False
-            json_found = False
-            for d in data:
-                # search for json by id
-                if str(d.id) == str(json_to_edit_id):
-                    # found json by id
-                    json_found = True
-                    if str(d.password) == str(json_to_edit_password):
-                        # if json password ok
-                        json_updated = True
-                        d.data = json_data
-                        break
-                    else:
-                        # if json password is invalid
-                        return ("Error invalid json password", status.HTTP_404_NOT_FOUND)
+        if json_to_edit.password:
+            if str(json_to_edit.password) == str(json_to_edit_password):
+                # if json password ok
+                json_updated = True
+                try:
+                    json_to_edit.data = str(json_data)
+                    db.session.commit()
+                except Exception as e:
+                    print(e)
 
-            if json_found and json_updated:
+            else:
+                # if json password is invalid
+                return ("error invalid json password", status.HTTP_404_NOT_FOUND)
+
+            if json_to_edit and json_updated:
                 return ("json updated", status.HTTP_200_OK)
             else:
                 # did not found json by id
-                return ("Error json not found", status.HTTP_404_NOT_FOUND)
-        # handle edit if not protected
+                return ("error not updated", status.HTTP_404_NOT_FOUND)
+                # handle edit if not protected
+        elif not json_to_edit.password and json_protected:
+            return ("why password", status.HTTP_404_NOT_FOUND)
         else:
             json_updated = False
-            json_found = False
-            for d in data:
-                # search for json by id
-                if str(d.id) == str(json_to_edit_id):
-                    if d.password:
-                        return ("Error json is protected!", status.HTTP_404_NOT_FOUND)
-                    # found json by id
-                    json_found = True
-                    json_updated = True
-                    d.data = json_data
-                    break
-            if json_found and json_updated:
+            try:
+                json_to_edit.data = str(json_data)
+                db.session.commit()
+                json_updated = True
+            except Exception as e:
+                print(e)
+
+            if json_to_edit and json_updated:
                 return ("json updated", status.HTTP_200_OK)
             else:
                 # did not found json by id
-                return ("Error json not found", status.HTTP_404_NOT_FOUND)
+                return ("error json not found", status.HTTP_404_NOT_FOUND)
 
     if request.method == 'POST':
-
         recived_data = request.get_json(force=True)
-        newJson = JsonObject(0, "null", None)
         try:
             json_to_create_id = recived_data['jsonId']
         except:
-            return ("Error you need to provide json id", status.HTTP_404_NOT_FOUND)
+            return ("error you need to provide json id", status.HTTP_404_NOT_FOUND)
+
         try:
             json_has_password = recived_data['jsonPassword']
-            newJson.password = json_has_password
             del recived_data['jsonPassword']
         except:
-            json_has_password = "not set"
+            json_has_password = None
 
-        if json_to_create_id:
-            # create with custom id if id is not taken
-            id_taken = False
-            for d in data:
-                if str(d.id) == str(json_to_create_id):
-                    id_taken = True
-
-            if not id_taken:
-                newJson.id = json_to_create_id
-            else:
-                return ("that id is taken", status.HTTP_403_FORBIDDEN)
+        taken = db.session.query(Json).get(json_to_create_id)
+        if not taken:
+            try:
+                del recived_data['jsonId']
+                newJsonDB = Json(json_to_create_id, json_has_password, str(recived_data))
+                db.session.add(newJsonDB)
+                db.session.commit()
+            except Exception as e:
+                print(e)
 
         else:
-            return ("pls provide json id", status.HTTP_204_NO_CONTENT)
+            return ("that id is taken", status.HTTP_403_FORBIDDEN)
 
-        del recived_data['jsonId']
-
-        try:
-            newJson.data = recived_data
-            newJsonDB = Json(newJson.id, newJson.password, str(newJson.data))
-            db.session.add(newJsonDB)
-            db.session.commit()
-
-            print("save new json to db")
-        except Exception as e:
-
-            print("failed to save json to db")
-            print(e)
-            pass
-        data.append(newJson)
-
-        return (
-            "Json created your json id: " + json_to_create_id + " and pass: " + json_has_password + ". Remember your password it wont be shown anywhere!",
-            status.HTTP_201_CREATED)
+        if json_has_password:
+            return (
+                "json created your json id: " + json_to_create_id + " and pass: " + json_has_password + " remember your password it wont be shown anywhere",
+                status.HTTP_201_CREATED)
+        else:
+            return ("json created your json id: " + json_to_create_id,
+                    status.HTTP_201_CREATED)
 
     if request.method == 'DELETE':
-
         # try to get json id
         json_id = request.args.get('jsonId')
+        if not json_id:
+            return ("error you did not send json id", status.HTTP_404_NOT_FOUND)
 
-        if json_id:
-            # find json and check if exists and is it protected!
-            json_found = False
+        json_to_delete = db.session.query(Json).get(json_id)
 
-            for d in data:
-                if str(d.id) == str(json_id):
-                    json_found = True
-                    json = d
-                    break
-
-            if json_found:
-                # go on
-                if json.password:
-                    json_password = request.args.get('jsonPassword')
-
-                    # if we got password
-                    if json_password:
-                        if json_password == json.password:
-                            data.remove(json)
-                            return ("json removed", status.HTTP_200_OK)
-                        else:
-                            return ("Error invalid json password", status.HTTP_404_NOT_FOUND)
-                    # if user forgot password
-                    else:
-                        return ("Error json is protected and you did not provide password", status.HTTP_404_NOT_FOUND)
-
-                else:
-                    data.remove(json)
-                    return ("json removed", status.HTTP_200_OK)
-            else:
-                return ("Error json not found", status.HTTP_404_NOT_FOUND)
-
-
+        if not json_to_delete:
+            return ("json not found", status.HTTP_404_NOT_FOUND)
         else:
-            return ("Error you did not send json id", status.HTTP_404_NOT_FOUND)
+
+            if json_to_delete.password:
+                json_pass = request.args.get('jsonPassword')
+                if not json_pass:
+                    return ("json is protected provide password", status.HTTP_400_BAD_REQUEST)
+                else:
+                    if str(json_to_delete.password) == str(json_pass):
+                        db.session.delete(json_to_delete)
+                        db.session.commit()
+                        return ('json deleted', status.HTTP_200_OK)
+                    else:
+                        return ('invalid password', status.HTTP_400_BAD_REQUEST)
+            else:
+                db.session.delete(json_to_delete)
+                db.session.commit()
+                return ('json deleted', status.HTTP_200_OK)
 
 
 @app.route('/about', methods=["GET"])
@@ -230,8 +201,7 @@ def about():
 if __name__ == "__main__":
     try:
         print("Starting the app")
-        print("Creating db")
         db.create_all()
-    except:
-        pass
+    except Exception as e:
+        print(e)
     app.run(host='0.0.0.0', threaded=True)
