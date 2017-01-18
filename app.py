@@ -36,8 +36,8 @@ def web():
     jsons = None
     try:
         jsons = db.session.query(Json).all()
-    except:
-        pass
+    except Exception as e:
+        print(e)
     return render_template('index.html', jsons=jsons)
 
 

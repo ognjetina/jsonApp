@@ -52,18 +52,21 @@
         <th>Data</th>
         <th>Protected</th>
     </tr>
-    {% for json in jsons %}
-        <tr>
-            <th>{{ json.id }}</th>
-            <th>{{ json.data }}</th>
-            {% if json.password %}
-                <th>Protected</th>
-            {% else %}
-                <th>Not protected</th>
-            {% endif %}
-        </tr>
-    {% endfor %}
-
+    {% if jsons %}
+        {% for json in jsons %}
+            <tr>
+                <th>{{ json.id }}</th>
+                <th>{{ json.data }}</th>
+                {% if json.password %}
+                    <th>Protected</th>
+                {% else %}
+                    <th>Not protected</th>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    {% else %}
+        <h3>No data</h3>
+    {% endif %}
 </table>
 </body>
 </html>
