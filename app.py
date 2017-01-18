@@ -169,7 +169,9 @@ def json():
             newJsonDB = Json(newJson.id, newJson.password, newJson.data)
             db.session.add(newJsonDB)
             db.session.commit()
+            print("save new json to db")
         except:
+            print("failed to save json to db")
             pass
         data.append(newJson)
 
