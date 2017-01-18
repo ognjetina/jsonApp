@@ -13,8 +13,7 @@ db = SQLAlchemy(app)
 CORS(app)
 data = []
 
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.DEBUG)
+
 
 
 class Json(db.Model):
@@ -216,6 +215,9 @@ def about():
 
 
 if __name__ == "__main__":
+    app.logger.addHandler(logging.StreamHandler(sys.stdout))
+    app.logger.setLevel(logging.DEBUG)
+
     sys.stdout.write("Starting the app")
     sys.stdout.write("Creating db")
     db.create_all()
