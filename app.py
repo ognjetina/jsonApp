@@ -63,7 +63,7 @@ def json():
         try:
             result = db.session.query(Json).get(json_id)
             if result:
-                return jsonify(data=json_wrap.loads(result.data))
+                return jsonify(json_wrap.loads(result.data))
 
             else:
                 return ("json not found", status.HTTP_404_NOT_FOUND)
